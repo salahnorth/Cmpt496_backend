@@ -1,82 +1,77 @@
 // server.js
-// Simple Express + SQLite backend for Favourites (books/movies)
-
-// 1. Import modules
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 
-// 2. Create Express app
 const app = express();
 const PORT = 3000;
 
-// 3. Middleware to parse JSON
+// App handling JSON
 app.use(express.json());
 
-// 4. Open or create the database file
-const db = new sqlite3.Database("./favourites.sqlite", function(err) {
-  if (err) {
-    console.log("Error opening database:", err.message);
-  } else {
-    console.log("Connected to SQLite database.");
-  }
-});
+// Open/create the database file
+const db = new sqlite3.Database("./favourites.sqlite");
+console.log("Database ready..");
 
-// 5. Make sure the table exists
-db.run(`CREATE TABLE IF NOT EXISTS favourites (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  type TEXT NOT NULL
-)`);
+// Create table
+db.run(
+  "CREATE TABLE IF NOT EXISTS favourites (" +
+    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+    "title TEXT NOT NULL," +
+    "type TEXT NOT NULL" +
+    ")"
+);
 
-// --- ROUTES ---
+// ---------------- ROUTES ----------------
 
-// 6. GET all favourites
-app.get("/favourites", function(req, res) {
-  db.all("SELECT * FROM favourites", [], function(err, rows) {
+// Show all favourites
+app.get("/favourites", (req, res) => {
+  const sql = "SELECT * FROM favourites";
+  db.all(sql, (err, rows) => {
     if (err) {
-      res.send({ error: "Error fetching favourites: " + err.message });
+      res.send("Error reading favourites.");
     } else {
-      res.send(rows); // send back all rows as JSON
+      res.send(rows);
     }
   });
 });
 
-// 7. POST add a new favourite
-app.post("/favourites", function(req, res) {
+// Add a favourite
+app.post("/favourites", (req, res) => {
   const title = req.body.title;
   const type = req.body.type;
 
-  if (!title || !type) {
-    res.send({ error: "Please provide both title and type (book or movie)" });
-    return;
-  }
+  const sql =
+    "INSERT INTO favourites (title, type) VALUES ('" +
+    title +
+    "', '" +
+    type +
+    "')";
 
-  const sql = "INSERT INTO favourites (title, type) VALUES (?, ?)";
-  db.run(sql, [title, type], function(err) {
+  db.run(sql, (err) => {
     if (err) {
-      res.send({ error: "Could not add favourite: " + err.message });
+      res.send("Error adding favourite.");
     } else {
-      // Just confirm what was added
-      res.send({ message: "Favourite added", title: title, type: type });
+      res.send("Favourite added!");
     }
   });
 });
 
-// 8. DELETE a favourite by id
-app.delete("/favourites/:id", function(req, res) {
+// Delete a favourite
+app.delete("/favourites/:id", (req, res) => {
   const id = req.params.id;
 
-  const sql = "DELETE FROM favourites WHERE id = ?";
-  db.run(sql, [id], function(err) {
+  const sql = "DELETE FROM favourites WHERE id = " + id;
+  db.run(sql, (err) => {
     if (err) {
-      res.send({ error: "Could not delete favourite: " + err.message });
+      res.send("Error deleting favourite.");
     } else {
-      res.send({ message: "Favourite deleted", id: id });
+      res.send("Favourite deleted!");
     }
   });
 });
 
-// 9. Start server
-app.listen(PORT, function() {
+// ---------------- START SERVER ----------------
+app.listen(PORT, () => {
   console.log("Server running at http://localhost:" + PORT);
 });
+
