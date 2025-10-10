@@ -1,12 +1,15 @@
 // server.js
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
+const cors = require("cors");
 
 const app = express();
 const PORT = 3000;
 
-// App handling JSON
+// App handling JSON and cors
 app.use(express.json());
+
+app.use(cors());
 
 // Open/create the database file
 const db = new sqlite3.Database("./favourites.sqlite");
@@ -21,9 +24,7 @@ db.run(
     ")"
 );
 
-// ---------------- ROUTES ----------------
-
-// Show all favourites
+// Showing all favourites
 app.get("/favourites", (req, res) => {
   const sql = "SELECT * FROM favourites";
   db.all(sql, (err, rows) => {
@@ -35,7 +36,7 @@ app.get("/favourites", (req, res) => {
   });
 });
 
-// Add a favourite
+// Adding a favourite
 app.post("/favourites", (req, res) => {
   const title = req.body.title;
   const type = req.body.type;
@@ -56,7 +57,7 @@ app.post("/favourites", (req, res) => {
   });
 });
 
-// Delete a favourite
+// Deleting a favourite
 app.delete("/favourites/:id", (req, res) => {
   const id = req.params.id;
 
@@ -70,8 +71,6 @@ app.delete("/favourites/:id", (req, res) => {
   });
 });
 
-// ---------------- START SERVER ----------------
 app.listen(PORT, () => {
   console.log("Server running at http://localhost:" + PORT);
 });
-

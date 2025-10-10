@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Favourites List</h1>
+
+    <script>
+      async function load() {
+        const res = await fetch("http://localhost:3000/favourites");
+        const data = await res.json();
+
+        // Convert into JSON string
+        document.body.innerText = JSON.stringify(data, null, 2);
+      }
+      load();
+
+    </script>
+  </body>
+</html>
