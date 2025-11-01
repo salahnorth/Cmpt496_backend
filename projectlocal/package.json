@@ -1,10 +1,14 @@
 {
   "name": "projectlocal",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend for recommendation system",
+  "main": "server.js",
+
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "import:tmdb": "node import_tmdb.js",
+    "import:streaming": "node import_streaming.js",
+    "import:books": "node import_googlebooks.js"
   },
   "keywords": [],
   "author": "",

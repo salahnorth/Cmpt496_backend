@@ -61,9 +61,10 @@ app.post("/items", (req, res) => {
   const release_year = req.body.release_year;
   const description = req.body.description;
   const rating = req.body.rating;
+  const type = req.body.type;
 
   const sql =
-    "INSERT INTO items (title, release_year, description, rating) VALUES ('" +
+    "INSERT INTO items (title, release_year, description, rating, type) VALUES ('" +
     title +
     "', '" +
     release_year +
@@ -71,6 +72,8 @@ app.post("/items", (req, res) => {
     description +
     "', '" +
     rating +
+    "', '" +
+    type +
     "')";
   db.run(sql, (err) => {
     if (err) res.send("Error adding item.");
@@ -85,6 +88,61 @@ app.get("/items", (req, res) => {
     else res.send(rows);
   });
 });
+
+// ---------------------- MOVIES ----------------------
+app.post("/movies", (req, res) => {
+  const title = req.body.title;
+  const release_year = req.body.release_year;
+  const description = req.body.description;
+  const rating = req.body.rating;
+  const genre = req.body.genre;
+  const last_checked = req.body.last_checked;
+
+  const sql =
+    "INSERT INTO movies (title, release_year, description, rating, genre, last_checked) " +
+    "VALUES ('" + title + "', '" + release_year + "', '" + description + "', '" + rating + "', '" + genre + "', '" + last_checked + "')";
+  db.run(sql, (err) => {
+    if (err) res.send("Error adding movie.");
+    else res.send("Movie added!");
+  });
+});
+
+app.get("/movies", (req, res) => {
+  const sql = "SELECT * FROM movies";
+  db.all(sql, (err, rows) => {
+    if (err) res.send("Error reading movies.");
+    else res.send(rows);
+  });
+});
+
+// ---------------------- BOOKS ----------------------
+app.post("/books", (req, res) => {
+  const title = req.body.title;
+  const authors = req.body.authors;
+  const description = req.body.description;
+  const published_date = req.body.published_date;
+  const rating = req.body.rating;
+  const genre = req.body.genre;
+  const page_count = req.body.page_count;
+  const last_checked = req.body.last_checked;
+
+  const sql =
+    "INSERT INTO books (title, authors, description, published_date, rating, genre, page_count, last_checked) " +
+    "VALUES ('" + title + "', '" + authors + "', '" + description + "', '" + published_date + "', '" + rating + "', '" + genre + "', '" + page_count + "', '" + last_checked + "')";
+  db.run(sql, (err) => {
+    if (err) res.send("Error adding book.");
+    else res.send("Book added!");
+  });
+});
+
+app.get("/books", (req, res) => {
+  const sql = "SELECT * FROM books";
+  db.all(sql, (err, rows) => {
+    if (err) res.send("Error reading books.");
+    else res.send(rows);
+  });
+});
+
 
 // ---------------------- FAVOURITES ----------------------
 app.post("/favourites", (req, res) => {
