@@ -62,9 +62,10 @@ app.post("/items", (req, res) => {
   const description = req.body.description;
   const rating = req.body.rating;
   const type = req.body.type;
+  const image_url = req.body.image_url;
 
   const sql =
-    "INSERT INTO items (title, release_year, description, rating, type) VALUES ('" +
+    "INSERT INTO items (title, release_year, description, rating, type, image_url) VALUES ('" +
     title +
     "', '" +
     release_year +
@@ -74,6 +75,8 @@ app.post("/items", (req, res) => {
     rating +
     "', '" +
     type +
+    "', '" +
+    image_url +
     "')";
   db.run(sql, (err) => {
     if (err) res.send("Error adding item.");
@@ -97,10 +100,11 @@ app.post("/movies", (req, res) => {
   const rating = req.body.rating;
   const genre = req.body.genre;
   const last_checked = req.body.last_checked;
+  const image_url = req.body.image_url;
 
   const sql =
-    "INSERT INTO movies (title, release_year, description, rating, genre, last_checked) " +
-    "VALUES ('" + title + "', '" + release_year + "', '" + description + "', '" + rating + "', '" + genre + "', '" + last_checked + "')";
+    "INSERT INTO movies (title, release_year, description, rating, genre, last_checked, image_url) " +
+    "VALUES ('" + title + "', '" + release_year + "', '" + description + "', '" + rating + "', '" + genre + "', '" + last_checked + "', '" + image_url + "')";
   db.run(sql, (err) => {
     if (err) res.send("Error adding movie.");
     else res.send("Movie added!");
@@ -125,10 +129,11 @@ app.post("/books", (req, res) => {
   const genre = req.body.genre;
   const page_count = req.body.page_count;
   const last_checked = req.body.last_checked;
+  const image_url = req.body.image_url;
 
   const sql =
-    "INSERT INTO books (title, authors, description, published_date, rating, genre, page_count, last_checked) " +
-    "VALUES ('" + title + "', '" + authors + "', '" + description + "', '" + published_date + "', '" + rating + "', '" + genre + "', '" + page_count + "', '" + last_checked + "')";
+    "INSERT INTO books (title, authors, description, published_date, rating, genre, page_count, last_checked, image_url) " +
+    "VALUES ('" + title + "', '" + authors + "', '" + description + "', '" + published_date + "', '" + rating + "', '" + genre + "', '" + page_count + "', '" +  last_checked + "', '" + image_url + "')";
   db.run(sql, (err) => {
     if (err) res.send("Error adding book.");
     else res.send("Book added!");
