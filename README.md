@@ -7,15 +7,18 @@ npm install express cors puppeteer
 npm install sqlite3
 
 # Running the backend locally
-node server.js
+npm start
 
-For displaying, adding and deleting items from the database, I used the Postman app so far, it goes like this:
-1) We run node server.js
-2) We open postman app and make the following requests:
-	i) GET request to display the items in the database
-	ii) POST request to add items to the database
-	iii) DELETE request to delete items from the database
-3) We open "http://localhost:3000/favourites" in the web browser to display the items in the database
+# Website for the backend running on render.com
+https://cmpt496-backend.onrender.com
 
-# Scraping the top 100 movies
-node imdbscraper.js
+Adding /users to get users data
+Adding /items to get items data (general data for books and movies)
+Adding /books to get books data
+Adding /movies to get movies data
+Adding /favourites to get user-favourites data
+Adding /genres to get genres data
+Adding /item_genres to get item genres data
+Adding /availability to get availability data
+Adding /reviews to get reviews data
+Adding /sources to get sources data
