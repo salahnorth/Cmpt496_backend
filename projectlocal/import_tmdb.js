@@ -1,19 +1,19 @@
 const axios = require("axios");
 const sqlite3 = require("sqlite3").verbose();
 
-const API_KEY = "e4032c00b9af85e3df97f1a0f50b0e78"; // put your TMDB key here
+const API_KEY = "e4032c00b9af85e3df97f1a0f50b0e78";
 const BASE_URL = "https://api.themoviedb.org/3";
-const MAX_PAGES = 5; // total movies = 20 * MAX_PAGES
+const MAX_PAGES = 5;
 const db = new sqlite3.Database("./database.db");
 
-async function runQuery(sql) {
+function runQuery(sql) {
   return new Promise((resolve, reject) => {
     db.run(sql, function (err) {
       if (err) {
         console.log("Error running query:", err.message);
         reject(err);
       } else {
-        resolve(this.lastID); // returns the new row id
+        resolve(this.lastID);
       }
     });
   });
@@ -34,20 +34,23 @@ async function importCanadianMovies() {
         const release_year = movie.release_date ? movie.release_date.split("-")[0] : "";
         const genre = (movie.genre_ids && movie.genre_ids.length > 0) ? movie.genre_ids.join(",") : "";
         const last_checked = new Date().toISOString();
+        const image_url = movie.poster_path
+          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+          : null;
 
-        // insert into items table
         const sqlItems = `
-          INSERT INTO items (title, release_year, description, rating)
-          VALUES ('${title}', '${release_year}', '${description}', '${rating}')
+          INSERT INTO items (title, release_year, description, rating, image_url, type)
+          VALUES ('${title}', '${release_year}', '${description}', '${rating}', '${image_url}', 'movie')
         `;
         const itemId = await runQuery(sqlItems);
 
-        // insert into movies table
         const sqlMovies = `
-          INSERT INTO movies (item_id, title, release_year, description, rating, genre, last_checked)
-          VALUES ('${itemId}', '${title}', '${release_year}', '${description}', '${rating}', '${genre}', '${last_checked}')
+          INSERT INTO movies (item_id, title, release_year, description, rating, genre, image_url, last_checked)
+          VALUES ('${itemId}', '${title}', '${release_year}', '${description}', '${rating}', '${genre}', '${image_url}', '${last_checked}')
         `;
         await runQuery(sqlMovies);
+
+        console.log(`Added: ${title}`);
       }
     }
 
@@ -59,5 +62,4 @@ async function importCanadianMovies() {
   }
 }
 
-// run the importer
 importCanadianMovies();

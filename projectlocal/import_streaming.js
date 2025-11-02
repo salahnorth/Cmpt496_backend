@@ -4,23 +4,18 @@ const sqlite3 = require("sqlite3").verbose();
 const API_KEY = "66c2dc1512msh0b54032f5cf514bp15affcjsn12fd4d6e4b3b";
 const db = new sqlite3.Database("./database.db");
 
-// Helper to run SQL queries
 function runQuery(sql) {
   return new Promise((resolve, reject) => {
     db.run(sql, function (err) {
-      if (err) {
-        console.log("SQL Error:", err.message);
-        reject(err);
-      } else {
-        resolve(this.lastID);
-      }
+      if (err) reject(err);
+      else resolve(this.lastID);
     });
   });
 }
 
 async function importCanadianMovies() {
   try {
-    console.log("Fetching the Canadian movies from Streaming Availability API...");
+    console.log("Fetching Canadian movies from Streaming Availability API...");
 
     const options = {
       method: "GET",
@@ -30,7 +25,6 @@ async function importCanadianMovies() {
         services: "netflix,disney",
         show_type: "movie",
         output_language: "en",
-        genres_relation: "or",
       },
       headers: {
         "x-rapidapi-key": API_KEY,
@@ -43,51 +37,31 @@ async function importCanadianMovies() {
     console.log("Movies found:", movies.length);
 
     for (const movie of movies) {
-      let title;
-      let release_year;
-      let description;
-      let rating;
-      let last_checked;
+      const title = movie.title ? movie.title.replace(/'/g, "''") : "Untitled";
+      const description = movie.overview ? movie.overview.replace(/'/g, "''") : "";
+      const release_year = movie.year ? movie.year.toString() : "";
+      const rating = movie.imdbRating || 0;
+      const last_checked = new Date().toISOString();
 
-      if (movie.title) {
-        title = movie.title.replace(/'/g, "''");
-      } else {
-        title = "Untitled";
-      }
-
-      if (movie.overview) {
-        description = movie.overview.replace(/'/g, "''");
-      } else {
-        description = "";
-      }
-
-      if (movie.year) {
-        release_year = movie.year.toString();
-      } else {
-        release_year = "";
-      }
-
-      if (movie.imdbRating) {
-        rating = movie.imdbRating.toString();
-      } else {
-        rating = "";
-      }
-
-      last_checked = new Date().toISOString();
+      // Safely extract image (verticalPoster or horizontalPoster)
+      const image_url =
+        movie.imageSet?.verticalPoster?.w500 ||
+        movie.imageSet?.horizontalPoster?.w500 ||
+        null;
 
       const sqlItems = `
-        INSERT INTO items (title, release_year, description, type)
-        VALUES ('${title}', '${release_year}', '${description}', 'movie')
+        INSERT INTO items (title, release_year, description, rating, image_url, type)
+        VALUES ('${title}', '${release_year}', '${description}', '${rating}', '${image_url}', 'movie')
       `;
       const itemId = await runQuery(sqlItems);
 
       const sqlMovies = `
-        INSERT INTO movies (item_id, title, release_year, description, rating, last_checked)
-        VALUES ('${itemId}', '${title}', '${release_year}', '${description}', '${rating}', '${last_checked}')
+        INSERT INTO movies (item_id, title, release_year, description, rating, image_url, last_checked)
+        VALUES ('${itemId}', '${title}', '${release_year}', '${description}', '${rating}', '${image_url}', '${last_checked}')
       `;
       await runQuery(sqlMovies);
 
-      console.log(`Added: ${title} (${release_year})`);
+      console.log(`Added: ${title}`);
     }
 
     console.log("All Canadian movies imported successfully!");
