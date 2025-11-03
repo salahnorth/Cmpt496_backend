@@ -77,6 +77,22 @@ importAllData().then(() => {
     });
   });
 
+  // ---------------------- LOGIN ----------------------
+  app.post("/login", (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    const sql =
+      "SELECT * FROM users WHERE username = '" + email + "' AND password = '" + password + "'";
+
+    db.get(sql, (err, row) => {
+      if (err) res.status(500).json({ message: "Database error" });
+      else if (!row) res.status(401).json({ message: "Invalid credentials" });
+      else res.json({ message: "Login successful", user: row });
+    });
+  });
+
+
   // ---------------------- ITEMS ----------------------
   app.post("/items", (req, res) => {
     const title = req.body.title;
