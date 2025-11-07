@@ -388,6 +388,142 @@ importAllData().then(() => {
     });
   });
 
+
+  // ---------------------- RECOMMENDATIONS (JACCARD) ----------------------
+// Jaccard = (items both users like) / (all unique items both users liked)
+app.get("/recommendations/:userId", (req, res) => {
+  const userId = req.params.userId;
+
+  // 1) Get this user's favourite items
+  const sqlUserFavs = "SELECT item_id FROM favourites WHERE user_id = ?";
+
+  db.all(sqlUserFavs, [userId], (err, userFavRows) => {
+    if (err) {
+      res.status(500).json({ error: "Error getting user favourites" });
+      return;
+    }
+
+    // Convert SQLite rows to a normal list using a basic for loop
+    let userItems = [];
+    for (let i = 0; i < userFavRows.length; i++) {
+      userItems.push(userFavRows[i].item_id);
+    }
+
+    if (userItems.length === 0) {
+      res.json({ message: "User has no favourites yet", recommendations: [] });
+      return;
+    }
+
+    // 2) Get favourite items from OTHER users
+    const sqlOthersFavs = "SELECT user_id, item_id FROM favourites WHERE user_id != ?";
+
+    db.all(sqlOthersFavs, [userId], (err, otherFavRows) => {
+      if (err) {
+        res.status(500).json({ error: "Error getting other users' favourites" });
+        return;
+      }
+
+      // Group items by each other user manually
+      let otherUsersFavs = {}; 
+      for (let i = 0; i < otherFavRows.length; i++) {
+        let otherUser = otherFavRows[i].user_id;
+        let item = otherFavRows[i].item_id;
+
+        if (!otherUsersFavs[otherUser]) {
+          otherUsersFavs[otherUser] = [];
+        }
+
+        otherUsersFavs[otherUser].push(item);
+      }
+
+      let similarityList = [];
+
+      // 3) Compare this user with each other user
+      for (let otherUserId in otherUsersFavs) {
+        let otherItems = otherUsersFavs[otherUserId];
+
+        // Find intersection (shared items)
+        let sharedCount = 0;
+        for (let i = 0; i < userItems.length; i++) {
+          for (let j = 0; j < otherItems.length; j++) {
+            if (userItems[i] == otherItems[j]) {
+              sharedCount++;
+            }
+          }
+        }
+
+        // Find union (all unique items both users liked)
+        let unionList = [];
+        // Add user items
+        for (let i = 0; i < userItems.length; i++) {
+          if (!unionList.includes(userItems[i])) {
+            unionList.push(userItems[i]);
+          }
+        }
+        // Add other user's items
+        for (let i = 0; i < otherItems.length; i++) {
+          if (!unionList.includes(otherItems[i])) {
+            unionList.push(otherItems[i]);
+          }
+        }
+
+        let jaccard = sharedCount / unionList.length;
+
+        similarityList.push({
+          otherUserId: otherUserId,
+          similarity: jaccard,
+          items: otherItems
+        });
+      }
+
+      // 4) Sort by highest similarity
+      similarityList.sort((a, b) => b.similarity - a.similarity);
+
+      // 5) Collect recommendation items (things the user did NOT favourite)
+      let recommendedItems = [];
+
+      for (let k = 0; k < similarityList.length; k++) {
+        let otherItems = similarityList[k].items;
+
+        for (let x = 0; x < otherItems.length; x++) {
+          let item = otherItems[x];
+
+          // If user doesn't have this item already, recommend it
+          if (!userItems.includes(item) && !recommendedItems.includes(item)) {
+            recommendedItems.push(item);
+          }
+        }
+      }
+
+      if (recommendedItems.length === 0) {
+        res.json({ message: "No recommendations found", recommendations: [] });
+        return;
+      }
+
+      // 6) Get full item data to return to frontend
+      let placeholders = "";
+      for (let i = 0; i < recommendedItems.length; i++) {
+        placeholders += "?";
+        if (i < recommendedItems.length - 1) placeholders += ",";
+      }
+
+      const sqlItems = "SELECT * FROM items WHERE id IN (" + placeholders + ")";
+
+      db.all(sqlItems, recommendedItems, (err, rows) => {
+        if (err) {
+          res.status(500).json({ error: "Error fetching recommended item details" });
+          return;
+        }
+
+        res.json({
+          message: "Recommendations ready",
+          recommendations: rows
+        });
+      });
+    });
+  });
+});
+  
   // ---------------------- START SERVER ----------------------
   app.listen(PORT, () => {
     console.log("Server running at http://localhost:" + PORT);
