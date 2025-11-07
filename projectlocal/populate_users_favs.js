@@ -1,18 +1,22 @@
 const sqlite3 = require("sqlite3").verbose();
+const db = new sqlite3.Database("./database.db");
 
-const db = new sqlite3.Database("./database.db", (err) => {
+db.get("SELECT COUNT(*) AS count FROM users", (err, row) => {
   if (err) {
-    console.error("Error opening database:", err.message);
+    console.error(err);
     process.exit(1);
-  } else {
-    console.log("Connected to database.db");
   }
-});
 
-db.serialize(() => {
-  db.run("PRAGMA foreign_keys = ON;");
+  if (row.count > 0) {
+    console.log("Users already exist, skipping population.");
+    process.exit(0);
+  }
 
-  // ---------------------- FAVOURITES ----------------------
+  console.log("Populating demo users...");
+  db.serialize(() => {
+    db.run("PRAGMA foreign_keys = ON;");
+
+    // ---------------------- FAVOURITES ----------------------
     db.run("INSERT INTO favourites (user_id, item_id) VALUES (1, 1)");
     db.run("INSERT INTO favourites (user_id, item_id) VALUES (2, 2)");
     db.run("INSERT INTO favourites (user_id, item_id) VALUES (3, 3)");
@@ -26,6 +30,8 @@ db.serialize(() => {
 
     console.log("10 user favourites inserted.");
 
+  });
 });
+
 
 db.close();
