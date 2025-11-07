@@ -138,10 +138,11 @@ const db = new sqlite3.Database("./database.db", (err) => {
 });
 console.log("Database ready..");
 
+require("./populate_users_data.js");
+
 // -------------------- IMPORT DATA ON START --------------------
 async function importAllData() {
   try {
-    require("./populate_users_data.js");
     require("./import_streaming");
     require("./import_tmdb");
     require("./import_googlebooks");

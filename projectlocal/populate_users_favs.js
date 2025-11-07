@@ -1,6 +1,8 @@
+console.log("✅ Using NEW populate_users_data.js");
+
 const sqlite3 = require("sqlite3").verbose();
 
-// Open the same database as the server
+// Open the database
 const db = new sqlite3.Database("./database.db", (err) => {
   if (err) {
     console.error("Error opening database:", err.message);
@@ -41,8 +43,8 @@ const demoUsers = [
   ["derek@example.com", "pass123", 28, "M"]
 ];
 
-// Insert users safely (no duplicates)
-console.log("Populating demo users (INSERT OR IGNORE)...");
+// Insert users safely
+console.log("➡️  Populating demo users with INSERT OR IGNORE…");
 
 demoUsers.forEach(([username, password, age, gender]) => {
   db.run(
@@ -51,13 +53,16 @@ demoUsers.forEach(([username, password, age, gender]) => {
     [username, password, age, gender],
     (err) => {
       if (err) {
-        console.error("Error inserting user:", username, err.message);
+        console.error("❌ Error inserting:", username, err.message);
       }
     }
   );
 });
 
-console.log(" Demo user population complete (duplicates ignored).");
+console.log("✅ User population complete (IGNORING duplicates).");
 
 // Close DB connection after inserts
-setTimeout(() => db.close(), 500);
+setTimeout(() => {
+  db.close();
+  console.log("✅ populate_users_data.js finished.");
+}, 500);
