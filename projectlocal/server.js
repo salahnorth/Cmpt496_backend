@@ -7,6 +7,7 @@ const cors = require("cors");
 const import_streaming = require("./import_streaming");
 const import_tmdb = require("./import_tmdb");
 const import_googlebooks = require("./import_googlebooks");
+const import_OLbooks = require("./import_openlibrary")
 
 const app = express();
 const PORT = 3000;
@@ -32,6 +33,7 @@ async function importAllData() {
     require("./import_streaming");
     require("./import_tmdb");
     require("./import_googlebooks");
+    require ("./import_openlibrary")
 
     console.log("All external data imported successfully!");
   } catch (err) {
@@ -390,7 +392,7 @@ importAllData().then(() => {
 
 
   // ---------------------- RECOMMENDATIONS (JACCARD) ----------------------
-// Jaccard = (items both users like) / (all unique items both users liked)
+
 app.get("/recommendations/:userId", (req, res) => {
   const userId = req.params.userId;
 
@@ -402,8 +404,7 @@ app.get("/recommendations/:userId", (req, res) => {
       res.status(500).json({ error: "Error getting user favourites" });
       return;
     }
-
-    // Convert SQLite rows to a normal list using a basic for loop
+   // Convert SQLite rows to a normal list using a basic for loop
     let userItems = [];
     for (let i = 0; i < userFavRows.length; i++) {
       userItems.push(userFavRows[i].item_id);
@@ -423,7 +424,6 @@ app.get("/recommendations/:userId", (req, res) => {
         return;
       }
 
-      // Group items by each other user manually
       let otherUsersFavs = {}; 
       for (let i = 0; i < otherFavRows.length; i++) {
         let otherUser = otherFavRows[i].user_id;
