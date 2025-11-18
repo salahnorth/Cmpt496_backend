@@ -3,7 +3,7 @@ const sqlite3 = require("sqlite3").verbose();
 
 const API_KEY = "e4032c00b9af85e3df97f1a0f50b0e78";
 const BASE_URL = "https://api.themoviedb.org/3";
-const MAX_PAGES = 5;
+const MAX_PAGES = 20;
 const db = new sqlite3.Database("./database.db");
 
 function runQuery(sql) {
@@ -49,6 +49,14 @@ async function importCanadianMovies() {
           VALUES ('${itemId}', '${title}', '${release_year}', '${description}', '${rating}', '${genre}', '${image_url}', '${last_checked}')
         `;
         await runQuery(sqlMovies);
+
+        // Insert into sources table
+        const sourceName = "TMDB";
+        const sqlSource = `
+          INSERT INTO sources (item_id, source_name)
+          VALUES ('${itemId}', '${sourceName}')
+        `;
+        await runQuery(sqlSource);
 
         console.log(`Added: ${title}`);
       }

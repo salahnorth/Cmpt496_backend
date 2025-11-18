@@ -61,6 +61,14 @@ async function importCanadianMovies() {
       `;
       await runQuery(sqlMovies);
 
+      // Insert into sources table
+        const sourceName = "Streaming Service";
+        const sqlSource = `
+          INSERT INTO sources (item_id, source_name)
+          VALUES ('${itemId}', '${sourceName}')
+        `;
+        await runQuery(sqlSource);
+
       console.log(`Added: ${title}`);
     }
 

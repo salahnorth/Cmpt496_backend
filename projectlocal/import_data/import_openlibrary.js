@@ -18,8 +18,8 @@ async function importOLCanadianBooks() {
   try {
     console.log("Fetching Canadian books from Open Library...");
 
-    const MAX_RESULTS = 20;
-    const MAX_PAGES = 5;
+    const MAX_RESULTS = 100;
+    const MAX_PAGES = 20;
 
     for (let page = 1; page <= MAX_PAGES; page++) {
       // Open Library search API: https://openlibrary.org/dev/docs/api/search
@@ -48,6 +48,14 @@ async function importOLCanadianBooks() {
           VALUES ('${itemId}', '${title}', '${authors}', '${description}', '${published_date}', 0, '', 0, NULL, '${last_checked}')
         `;
         await runQuery(sqlBooks);
+
+        // Insert into sources table
+        const sourceName = "Open Library";
+        const sqlSource = `
+          INSERT INTO sources (item_id, source_name)
+          VALUES ('${itemId}', '${sourceName}')
+        `;
+        await runQuery(sqlSource);
 
         console.log(`Added: ${title}`);
       }
